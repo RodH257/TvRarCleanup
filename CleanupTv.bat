@@ -1,0 +1,1 @@
+tvrarcleanup.exe "F:\Torrents\Complete" "F:\TV" false "F:\TV\zz_ToDelete" > output.txt
