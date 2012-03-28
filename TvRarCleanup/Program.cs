@@ -134,24 +134,30 @@ namespace TvRarCleanup
             Console.WriteLine("Cleaning " + directory);
             if (previewOnly)
                 return;
-
-            foreach (var aviFile in aviFiles)
+            try
             {
-                FileInfo info = new FileInfo(aviFile);
-                var destPath = Path.Combine(tvStorageDir, info.Name);
-                if (File.Exists(destPath))
-                    File.Delete(aviFile);
-                else
-                    File.Move(aviFile, destPath);
-            }
+                foreach (var aviFile in aviFiles)
+                {
+                    FileInfo info = new FileInfo(aviFile);
+                    var destPath = Path.Combine(tvStorageDir, info.Name);
+                    if (File.Exists(destPath))
+                        File.Delete(aviFile);
+                    else
+                        File.Move(aviFile, destPath);
+                }
 
-            //either move or delete depending on if flag is set
-            var directoryInfo = new DirectoryInfo(directory);
-            var pathToMoveTo = Path.Combine(deletionGround, directoryInfo.Name);
-            if (!string.IsNullOrEmpty(deletionGround) && !Directory.Exists(pathToMoveTo))
-                Directory.Move(directory, pathToMoveTo);
-            else
-                Directory.Delete(directory, true);
+                //either move or delete depending on if flag is set
+                var directoryInfo = new DirectoryInfo(directory);
+                var pathToMoveTo = Path.Combine(deletionGround, directoryInfo.Name);
+                if (!string.IsNullOrEmpty(deletionGround) && !Directory.Exists(pathToMoveTo))
+                    Directory.Move(directory, pathToMoveTo);
+                else
+                    Directory.Delete(directory, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
 
@@ -159,28 +165,34 @@ namespace TvRarCleanup
         {
             var aviFiles = Directory.GetFiles(tvStorageDir, "*.avi").ToList();
             aviFiles.AddRange(Directory.GetFiles(tvStorageDir, "*.mkv"));
-
-            foreach (var file in aviFiles)
+            try
             {
-                Regex regex = new Regex("[Ss][0-9][0-9][Ee][0-9][0-9]");
-                if (!regex.IsMatch(file))
-                    continue;
-                var match = regex.Match(file);
-                string showName = file.Substring(0, match.Index-1).Replace("."," ");
-                string season = match.Value.Substring(0, 3);
+                foreach (var file in aviFiles)
+                {
+                    Regex regex = new Regex("[Ss][0-9][0-9][Ee][0-9][0-9]");
+                    if (!regex.IsMatch(file))
+                        continue;
+                    var match = regex.Match(file);
+                    string showName = file.Substring(0, match.Index - 1).Replace(".", " ");
+                    string season = match.Value.Substring(0, 3);
 
-                string directory = Path.Combine(tvStorageDir, showName, season);
+                    string directory = Path.Combine(tvStorageDir, showName, season);
 
-                Console.WriteLine("Moving {0} to {1}", file, directory);
+                    Console.WriteLine("Moving {0} to {1}", file, directory);
 
-                if (previewOnly)
-                    continue;
+                    if (previewOnly)
+                        continue;
 
-                if (!Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
+                    if (!Directory.Exists(directory))
+                        Directory.CreateDirectory(directory);
 
-                var fileInfo = new FileInfo(file);
-                File.Move(file, Path.Combine(directory, fileInfo.Name));
+                    var fileInfo = new FileInfo(file);
+                    File.Move(file, Path.Combine(directory, fileInfo.Name));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
     }
